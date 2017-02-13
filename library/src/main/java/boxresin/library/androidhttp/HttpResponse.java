@@ -2,7 +2,7 @@ package boxresin.library.androidhttp;
 
 /**
  * A class representing HTTP response.
- * You can get information in response(ex. HTTP version of a web server, HTTP status code, body of a message etc) via this class.
+ * You can get information in response(ex. HTTP status code, body of a message etc) via this class.
  */
 public class HttpResponse
 {
@@ -12,15 +12,6 @@ public class HttpResponse
 	HttpResponse()
 	{
 
-	}
-
-	/**
-	 * Return HTTP version of the web server.
-	 * @return HTTP version as String (ex. "HTTP/1.1")
-	 */
-	public String getHttpVersion()
-	{
-		return null;
 	}
 
 	/**

@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 /**
@@ -11,8 +12,10 @@ import java.net.URL;
  */
 public class HttpRequester
 {
-	private String url; // URL to requst
-	private String method; // HTTP method
+	private String url = ""; // URL to requst
+	private String method = ""; // HTTP method
+	private int connectTimeout;
+	private int readTimeout;
 
 	/**
 	 * Return the URL to request.
@@ -42,12 +45,48 @@ public class HttpRequester
 	}
 
 	/**
-	 * Sets HTTP method
+	 * Sets HTTP method.
 	 * @param method HTTP method as String
 	 */
 	public void setMethod(String method)
 	{
 		this.method = method;
+	}
+
+	/**
+	 * Return connect-timeout.
+	 * @return connect-timeout, in milliseconds
+	 */
+	public int getConnectTimeout()
+	{
+		return connectTimeout;
+	}
+
+	/**
+	 * Sets timeout when connecting to a web server.
+	 * @param timeout connect-timeout, in milliseconds
+	 */
+	public void setConnectTimeout(int timeout)
+	{
+		this.connectTimeout = timeout;
+	}
+
+	/**
+	 * Return read-timeout.
+	 * @return read-timeout, in milliseconds
+	 */
+	public int getReadTimeout()
+	{
+		return readTimeout;
+	}
+
+	/**
+	 * Sets timeout when reading an HTTP response from a web server.
+	 * @param timeout read-timeout, in milliseconds
+	 */
+	public void setReadTimeout(int timeout)
+	{
+		this.readTimeout = timeout;
 	}
 
 	/**
@@ -58,21 +97,37 @@ public class HttpRequester
 	{
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setRequestMethod(method);
+		connection.setConnectTimeout(connectTimeout);
+		connection.setReadTimeout(readTimeout);
 
-		int statusCode = connection.getResponseCode();
-		String statusMessage = connection.getResponseMessage();
-
-		InputStream in = connection.getInputStream();
-		ByteArrayOutputStream out = new ByteArrayOutputStream(10 * 1024); // prepare 10 KB buffer.
-		byte[] buf = new byte[1024];
-
-		int length;
-		while ((length = in.read(buf)) != -1)
+		try
 		{
-			out.write(buf, 0, length);
+			int statusCode = connection.getResponseCode();
+			String statusMessage = connection.getResponseMessage();
+
+			// Read response's body.
+			InputStream in = connection.getInputStream();
+			ByteArrayOutputStream out = new ByteArrayOutputStream(10 * 1024); // Prepare 10 KB buffer.
+			byte[] buffer = new byte[1024];
+
+			int length;
+			while ((length = in.read(buffer)) != -1)
+			{
+				out.write(buffer, 0, length);
+			}
+
+			return new HttpResponse(statusCode, statusMessage, out);
 		}
 
-		connection.disconnect();
-		return new HttpResponse(statusCode, statusMessage, out);
+		// An exception that occurs when timeout
+		catch (SocketTimeoutException ignored)
+		{
+			return null;
+		}
+
+		finally
+		{
+			connection.disconnect();
+		}
 	}
 }

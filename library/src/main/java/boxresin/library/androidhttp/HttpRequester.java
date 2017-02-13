@@ -46,11 +46,11 @@ public class HttpRequester
 
 	/**
 	 * Sets HTTP method.
-	 * @param method HTTP method as String
+	 * @param method HTTP method as String (ex. "POST", "GET" etc) It's not case sensitive, so you can use both "POST" and "post".
 	 */
 	public void setMethod(String method)
 	{
-		this.method = method;
+		this.method = method.toUpperCase();
 	}
 
 	/**

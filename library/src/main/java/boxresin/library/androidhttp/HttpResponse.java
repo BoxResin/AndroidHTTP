@@ -1,6 +1,7 @@
 package boxresin.library.androidhttp;
 
 import java.io.ByteArrayOutputStream;
+import java.io.UnsupportedEncodingException;
 
 /**
  * A class representing HTTP response.
@@ -47,5 +48,15 @@ public class HttpResponse
 	public String getBody()
 	{
 		return out.toString();
+	}
+
+	/**
+	 * Return content of a response message. It can be an HTML document or JSON-formatted data.
+	 * @param encoding name of charset (ex. "UTF-8")
+	 * @return body of a response message as String with specified encoding.
+	 */
+	public String getBody(String encoding) throws UnsupportedEncodingException
+	{
+		return out.toString(encoding);
 	}
 }

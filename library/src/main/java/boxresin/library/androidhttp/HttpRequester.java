@@ -30,9 +30,10 @@ public class HttpRequester
 	 * Sets the URL to request.
 	 * @param url The URL to request
 	 */
-	public void setUrl(String url)
+	public HttpRequester setUrl(String url)
 	{
 		this.url = url;
+		return this;
 	}
 
 	/**
@@ -48,9 +49,10 @@ public class HttpRequester
 	 * Sets HTTP method.
 	 * @param method HTTP method as String (ex. "POST", "GET" etc) It's not case sensitive, so you can use both "POST" and "post".
 	 */
-	public void setMethod(String method)
+	public HttpRequester setMethod(String method)
 	{
 		this.method = method.toUpperCase();
+		return this;
 	}
 
 	/**
@@ -66,9 +68,10 @@ public class HttpRequester
 	 * Sets timeout when connecting to a web server.
 	 * @param timeout connect-timeout, in milliseconds
 	 */
-	public void setConnectTimeout(int timeout)
+	public HttpRequester setConnectTimeout(int timeout)
 	{
 		this.connectTimeout = timeout;
+		return this;
 	}
 
 	/**
@@ -84,9 +87,10 @@ public class HttpRequester
 	 * Sets timeout when reading an HTTP response from a web server.
 	 * @param timeout read-timeout, in milliseconds
 	 */
-	public void setReadTimeout(int timeout)
+	public HttpRequester setReadTimeout(int timeout)
 	{
 		this.readTimeout = timeout;
+		return this;
 	}
 
 	/**

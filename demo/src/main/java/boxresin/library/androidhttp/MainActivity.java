@@ -34,10 +34,10 @@ public class MainActivity extends AppCompatActivity
 				{
 					try
 					{
-						HttpRequester requester = new HttpRequester();
-						requester.setUrl(url);
-						requester.setMethod(method);
-						final HttpResponse response = requester.request();
+						final HttpResponse response = new HttpRequester()
+								.setUrl(url)
+								.setMethod(method)
+								.request();
 
 						runOnUiThread(new Runnable()
 						{

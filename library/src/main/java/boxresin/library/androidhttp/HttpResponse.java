@@ -36,7 +36,7 @@ public class HttpResponse
 	 * Return a description of HTTP status code.
 	 * @return description of HTTP status code as String. (ex. "Not Found")
 	 */
-	public String getStatusCodeMessage()
+	public String getStatusMessage()
 	{
 		return null;
 	}

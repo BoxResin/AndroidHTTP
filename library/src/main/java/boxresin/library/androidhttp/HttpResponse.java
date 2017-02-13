@@ -1,17 +1,25 @@
 package boxresin.library.androidhttp;
 
+import java.io.ByteArrayOutputStream;
+
 /**
  * A class representing HTTP response.
  * You can get information in response(ex. HTTP status code, body of a message etc) via this class.
  */
 public class HttpResponse
 {
+	private int statusCode;
+	private String statusMessage;
+	private ByteArrayOutputStream out;
+
 	/**
 	 * Preventing instantiation of HttpResponse with constructor.
 	 */
-	HttpResponse()
+	HttpResponse(int statusCode, String statusMessage, ByteArrayOutputStream out)
 	{
-
+		this.statusCode = statusCode;
+		this.statusMessage = statusMessage;
+		this.out = out;
 	}
 
 	/**
@@ -20,7 +28,7 @@ public class HttpResponse
 	 */
 	public int getStatusCode()
 	{
-		return 0;
+		return statusCode;
 	}
 
 	/**
@@ -29,7 +37,7 @@ public class HttpResponse
 	 */
 	public String getStatusMessage()
 	{
-		return null;
+		return statusMessage;
 	}
 
 	/**
@@ -38,6 +46,6 @@ public class HttpResponse
 	 */
 	public String getBody()
 	{
-		return null;
+		return out.toString();
 	}
 }

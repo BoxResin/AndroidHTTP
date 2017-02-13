@@ -1,5 +1,11 @@
 package boxresin.library.androidhttp;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 /**
  * A class to send HTTP requests.
  */
@@ -45,10 +51,28 @@ public class HttpRequester
 	}
 
 	/**
-	 * Send HTTP Request to web server.
+	 * Send HTTP Request to a web server.
+	 * @return An HTML response from the web server. It will return null if timeout occurs.
 	 */
-	public HttpResponse request()
+	public HttpResponse request() throws IOException
 	{
-		return null;
+		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+		connection.setRequestMethod(method);
+
+		int statusCode = connection.getResponseCode();
+		String statusMessage = connection.getResponseMessage();
+
+		InputStream in = connection.getInputStream();
+		ByteArrayOutputStream out = new ByteArrayOutputStream(10 * 1024); // prepare 10 KB buffer.
+		byte[] buf = new byte[1024];
+
+		int length;
+		while ((length = in.read(buf)) != -1)
+		{
+			out.write(buf, 0, length);
+		}
+
+		connection.disconnect();
+		return new HttpResponse(statusCode, statusMessage, out);
 	}
 }

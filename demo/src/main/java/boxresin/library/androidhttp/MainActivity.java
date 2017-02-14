@@ -27,9 +27,24 @@ public class MainActivity extends AppCompatActivity
 	{
 		if (binding.btnRequest.getText().equals("Cancel"))
 		{
-			httpRequester.cancel();
-			binding.btnRequest.setText("Request");
-			binding.loadingBar.setVisibility(View.GONE);
+			httpRequester.cancel(new HttpRequester.HttpCancelListener()
+			{
+				@Override
+				public void onHttpCancel()
+				{
+					runOnUiThread(new Runnable()
+					{
+						@Override
+						public void run()
+						{
+							binding.btnRequest.setText("Request");
+							binding.loadingBar.setVisibility(View.GONE);
+							binding.btnRequest.setEnabled(true);
+						}
+					});
+				}
+			});
+			binding.btnRequest.setEnabled(false);
 			return;
 		}
 
@@ -67,6 +82,7 @@ public class MainActivity extends AppCompatActivity
 									binding.txtHtml.setText(response.getBody());
 									binding.btnRequest.setText("Request");
 									binding.loadingBar.setVisibility(View.GONE);
+									binding.btnRequest.setEnabled(true);
 								}
 							}
 						});

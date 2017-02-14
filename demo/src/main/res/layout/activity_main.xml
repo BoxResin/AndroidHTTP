@@ -24,6 +24,7 @@
 					android:layout_weight = "1"
 					android:gravity = "center_vertical"
 					android:hint = "Input URL"
+					android:inputType = "textUri"
 					android:singleLine = "true"
 					android:text = "https://www.google.com/"/>
 

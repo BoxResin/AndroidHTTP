@@ -14,8 +14,8 @@ public class HttpRequester
 {
 	private String url = ""; // URL to requst
 	private String method = ""; // HTTP method
-	private int connectTimeout;
-	private int readTimeout;
+	private int connectTimeout; // Timeout when connecting to a web server, in milliseconds
+	private int readTimeout; // Timeout when reading an HTTP response from a web server, in milliseconds
 
 	/**
 	 * Return the URL to request.
@@ -57,7 +57,7 @@ public class HttpRequester
 
 	/**
 	 * Return connect-timeout.
-	 * @return connect-timeout, in milliseconds
+	 * @return Connect-timeout, in milliseconds
 	 */
 	public int getConnectTimeout()
 	{
@@ -66,7 +66,7 @@ public class HttpRequester
 
 	/**
 	 * Sets timeout when connecting to a web server.
-	 * @param timeout connect-timeout, in milliseconds
+	 * @param timeout Connect-timeout, in milliseconds
 	 */
 	public HttpRequester setConnectTimeout(int timeout)
 	{
@@ -76,7 +76,7 @@ public class HttpRequester
 
 	/**
 	 * Return read-timeout.
-	 * @return read-timeout, in milliseconds
+	 * @return Read-timeout, in milliseconds
 	 */
 	public int getReadTimeout()
 	{
@@ -85,7 +85,7 @@ public class HttpRequester
 
 	/**
 	 * Sets timeout when reading an HTTP response from a web server.
-	 * @param timeout read-timeout, in milliseconds
+	 * @param timeout Read-timeout, in milliseconds
 	 */
 	public HttpRequester setReadTimeout(int timeout)
 	{

@@ -19,11 +19,24 @@ public class HttpRequester
 	private String method = ""; // HTTP method
 	private int connectTimeout; // Timeout when connecting to a web server, in milliseconds
 	private int readTimeout; // Timeout when reading an HTTP response from a web server, in milliseconds
-
 	private boolean canceled; // Whether request is canceled or not
 
 	// Map that contains POST parameters
 	private Map<String, String> params = new TreeMap<>();
+
+	private HttpCancelListener cancelListener;
+
+	/**
+	 * Interface deifinition for a callback to be invoked when an HTTP request is canceled
+	 */
+	public interface HttpCancelListener
+	{
+		/**
+		 * A callback method to be invoked when an HTTP request is canceled
+		 * NOTE: This method is invoked in a thread where 'request' method is called.
+		 */
+		void onHttpCancel();
+	}
 
 	/**
 	 * Return the URL to request.
@@ -171,6 +184,8 @@ public class HttpRequester
 			{
 				canceled = false;
 				connection.disconnect();
+				if (cancelListener != null)
+					cancelListener.onHttpCancel();
 				return null;
 			}
 			bufferStream.write(buffer, 0, length);
@@ -182,9 +197,20 @@ public class HttpRequester
 
 	/**
 	 * Cancel the 'request' method.
+	 * NOTE: It doesn't terminate request immediately. If you want to know the time canceled, use cancel(listener).
 	 */
 	public void cancel()
 	{
+		cancel(null);
+	}
+
+	/**
+	 * Cancel the 'request' method.
+	 * @param listener Interface for a callback to be invoked when an HTTP request is canceled.
+	 */
+	public void cancel(HttpCancelListener listener)
+	{
+		cancelListener = listener;
 		canceled = true;
 	}
 }

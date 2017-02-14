@@ -20,6 +20,8 @@ public class HttpRequester
 	private int connectTimeout; // Timeout when connecting to a web server, in milliseconds
 	private int readTimeout; // Timeout when reading an HTTP response from a web server, in milliseconds
 
+	private boolean canceled; // Whether request is canceled or not
+
 	// Map that contains POST parameters
 	private Map<String, String> params = new TreeMap<>();
 
@@ -121,7 +123,7 @@ public class HttpRequester
 	 * Send HTTP request to a web server.
 	 *
 	 * @throws SocketTimeoutException Occurs when timeout.
-	 * @return An HTML response from the web server.
+	 * @return An HTML response from the web server. It will return null if 'cancel' method is called during request.
 	 */
 	public HttpResponse request() throws SocketTimeoutException, IOException
 	{
@@ -165,10 +167,24 @@ public class HttpRequester
 		int length;
 		while ((length = in.read(buffer)) != -1)
 		{
+			if (canceled)
+			{
+				canceled = false;
+				connection.disconnect();
+				return null;
+			}
 			bufferStream.write(buffer, 0, length);
 		}
 
 		connection.disconnect();
 		return new HttpResponse(statusCode, statusMessage, bufferStream);
+	}
+
+	/**
+	 * Cancel the 'request' method.
+	 */
+	public void cancel()
+	{
+		canceled = true;
 	}
 }

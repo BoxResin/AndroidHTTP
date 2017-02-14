@@ -20,7 +20,7 @@ public class HttpRequester
 	private int connectTimeout; // Timeout when connecting to a web server, in milliseconds
 	private int readTimeout; // Timeout when reading an HTTP response from a web server, in milliseconds
 
-	// Map that contains POST parameters.
+	// Map that contains POST parameters
 	private Map<String, String> params = new TreeMap<>();
 
 	/**
@@ -143,10 +143,9 @@ public class HttpRequester
 				String value = entry.getValue();
 
 				if (isNotFirst)
-				{
 					out.write("&".getBytes());
-					isNotFirst = true;
-				}
+				else isNotFirst = true;
+
 				out.write(String.format("%s=%s", key, value).getBytes());
 			}
 		}

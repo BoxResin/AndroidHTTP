@@ -99,6 +99,7 @@ public class HttpRequester
 	 */
 	public HttpResponse request() throws IOException
 	{
+		// Set options.
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setRequestMethod(method);
 		connection.setConnectTimeout(connectTimeout);
@@ -106,14 +107,16 @@ public class HttpRequester
 
 		try
 		{
+			// Read HTTP status.
 			int statusCode = connection.getResponseCode();
 			String statusMessage = connection.getResponseMessage();
 
-			// Read response's body.
-			InputStream in = connection.getInputStream();
-			ByteArrayOutputStream out = new ByteArrayOutputStream(10 * 1024); // Prepare 10 KB buffer.
+			// Prepare buffer.
+			ByteArrayOutputStream out = new ByteArrayOutputStream(10 * 1024);
 			byte[] buffer = new byte[1024];
 
+			// Read response's body.
+			InputStream in = connection.getInputStream();
 			int length;
 			while ((length = in.read(buffer)) != -1)
 			{

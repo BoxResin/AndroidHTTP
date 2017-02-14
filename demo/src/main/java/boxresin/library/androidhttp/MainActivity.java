@@ -12,19 +12,31 @@ import boxresin.library.androidhttp.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity
 {
 	private ActivityMainBinding binding;
+	private HttpRequester httpRequester;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
 		binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+
+		httpRequester = new HttpRequester();
 	}
 
 	public void onClick(View view)
 	{
+		if (binding.btnRequest.getText().equals("Cancel"))
+		{
+			httpRequester.cancel();
+			binding.btnRequest.setText("Request");
+			binding.loadingBar.setVisibility(View.GONE);
+			return;
+		}
+
 		binding.txtHttpStatus.setText("");
 		binding.txtHtml.setText("");
 		binding.btnRequest.setText("Cancel");
+		binding.loadingBar.setVisibility(View.VISIBLE);
 
 		if (view == binding.btnRequest)
 		{
@@ -38,7 +50,7 @@ public class MainActivity extends AppCompatActivity
 				{
 					try
 					{
-						final HttpResponse response = new HttpRequester()
+						final HttpResponse response = httpRequester
 								.setUrl(url)
 								.setMethod(method)
 								.request();
@@ -54,6 +66,7 @@ public class MainActivity extends AppCompatActivity
 											response.getStatusCode(), response.getStatusMessage()));
 									binding.txtHtml.setText(response.getBody());
 									binding.btnRequest.setText("Request");
+									binding.loadingBar.setVisibility(View.GONE);
 								}
 							}
 						});

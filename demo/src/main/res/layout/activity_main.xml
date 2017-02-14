@@ -2,62 +2,75 @@
 	xmlns:android = "http://schemas.android.com/apk/res/android"
 	xmlns:tools = "http://schemas.android.com/tools">
 
-	<LinearLayout
+	<FrameLayout
 		android:layout_width = "match_parent"
-		android:layout_height = "match_parent"
-		android:orientation = "vertical"
-		android:padding = "10dp"
-		tools:context = "boxresin.library.androidhttp.MainActivity">
+		android:layout_height = "match_parent">
 
 		<LinearLayout
 			android:layout_width = "match_parent"
-			android:layout_height = "50dp">
+			android:layout_height = "match_parent"
+			android:orientation = "vertical"
+			android:padding = "10dp"
+			tools:context = "boxresin.library.androidhttp.MainActivity">
 
-			<EditText
-				android:id = "@+id/edit_url"
-				android:layout_width = "0dp"
-				android:layout_height = "match_parent"
-				android:layout_weight = "1"
-				android:gravity = "center_vertical"
-				android:hint = "Input URL"
-				android:singleLine = "true"
-				android:text = "https://www.google.com/"/>
+			<LinearLayout
+				android:layout_width = "match_parent"
+				android:layout_height = "50dp">
 
-			<Spinner
-				android:id = "@+id/spinner_http_method"
-				android:layout_width = "wrap_content"
-				android:layout_height = "match_parent"
-				android:entries = "@array/http_method"/>
+				<EditText
+					android:id = "@+id/edit_url"
+					android:layout_width = "0dp"
+					android:layout_height = "match_parent"
+					android:layout_weight = "1"
+					android:gravity = "center_vertical"
+					android:hint = "Input URL"
+					android:singleLine = "true"
+					android:text = "https://www.google.com/"/>
 
-			<Button
-				android:id = "@+id/btn_request"
-				android:layout_width = "55dp"
-				android:layout_height = "match_parent"
-				android:onClick = "onClick"
-				android:text = "Request"
-				android:textSize = "12sp"/>
-		</LinearLayout>
+				<Spinner
+					android:id = "@+id/spinner_http_method"
+					android:layout_width = "wrap_content"
+					android:layout_height = "match_parent"
+					android:entries = "@array/http_method"/>
 
-		<LinearLayout
-			android:layout_width = "match_parent"
-			android:layout_height = "wrap_content"
-			android:background = "#0F0">
+				<Button
+					android:id = "@+id/btn_request"
+					android:layout_width = "55dp"
+					android:layout_height = "match_parent"
+					android:onClick = "onClick"
+					android:text = "Request"
+					android:textSize = "12sp"/>
+			</LinearLayout>
 
-			<TextView
-				android:id = "@+id/txt_http_status"
+			<LinearLayout
 				android:layout_width = "match_parent"
 				android:layout_height = "wrap_content"
-				android:textSize = "25sp"/>
+				android:background = "#0F0">
+
+				<TextView
+					android:id = "@+id/txt_http_status"
+					android:layout_width = "match_parent"
+					android:layout_height = "wrap_content"
+					android:textSize = "25sp"/>
+			</LinearLayout>
+
+			<ScrollView
+				android:layout_width = "match_parent"
+				android:layout_height = "match_parent">
+
+				<TextView
+					android:id = "@+id/txt_html"
+					android:layout_width = "match_parent"
+					android:layout_height = "wrap_content"/>
+			</ScrollView>
 		</LinearLayout>
 
-		<ScrollView
-			android:layout_width = "match_parent"
-			android:layout_height = "match_parent">
-
-			<TextView
-				android:id = "@+id/txt_html"
-				android:layout_width = "match_parent"
-				android:layout_height = "wrap_content"/>
-		</ScrollView>
-	</LinearLayout>
+		<ProgressBar
+			android:id = "@+id/loading_bar"
+			android:layout_width = "wrap_content"
+			android:layout_height = "wrap_content"
+			android:layout_gravity = "center"
+			android:visibility = "gone"
+			tools:visibility = "visible"/>
+	</FrameLayout>
 </layout>

@@ -44,7 +44,7 @@ public class HttpRequester
 
 	/**
 	 * Return HTTP method to request.
-	 * @return HTTP method as String
+	 * @return HTTP method as String type
 	 */
 	public String getMethod()
 	{
@@ -53,7 +53,7 @@ public class HttpRequester
 
 	/**
 	 * Sets HTTP method.
-	 * @param method HTTP method as String (ex. "POST", "GET" etc) It's not case sensitive, so you can use both "POST" and "post".
+	 * @param method HTTP method as String type (ex. "POST", "GET" etc) It's not case sensitive, so you can use both "POST" and "post".
 	 */
 	public HttpRequester setMethod(String method)
 	{
@@ -118,7 +118,7 @@ public class HttpRequester
 	}
 
 	/**
-	 * Send HTTP Request to a web server.
+	 * Send HTTP request to a web server.
 	 * @return An HTML response from the web server. It will return null if timeout occurs.
 	 */
 	public HttpResponse request() throws IOException

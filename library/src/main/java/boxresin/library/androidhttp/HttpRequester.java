@@ -3,9 +3,12 @@ package boxresin.library.androidhttp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A class to send HTTP requests.
@@ -16,6 +19,9 @@ public class HttpRequester
 	private String method = ""; // HTTP method
 	private int connectTimeout; // Timeout when connecting to a web server, in milliseconds
 	private int readTimeout; // Timeout when reading an HTTP response from a web server, in milliseconds
+
+	// Map that contains POST parameters.
+	private Map<String, String> params = new TreeMap<>();
 
 	/**
 	 * Return the URL to request.
@@ -94,6 +100,24 @@ public class HttpRequester
 	}
 
 	/**
+	 * Add a parameter for POST method.
+	 * If specified HTTP method is not "POST", this parameter would be ignored.
+	 */
+	public HttpRequester addParameter(String key, String value)
+	{
+		params.put(key, value);
+		return this;
+	}
+
+	/**
+	 * Clear all of parameters for POST method.
+	 */
+	public void clearParameters()
+	{
+		params.clear();
+	}
+
+	/**
 	 * Send HTTP Request to a web server.
 	 * @return An HTML response from the web server. It will return null if timeout occurs.
 	 */
@@ -105,6 +129,28 @@ public class HttpRequester
 		connection.setConnectTimeout(connectTimeout);
 		connection.setReadTimeout(readTimeout);
 
+		// Only for POST method
+		if (method.equals("POST"))
+		{
+			connection.setDoOutput(true);
+
+			// Add POST parameters.
+			boolean isNotFirst = false;
+			OutputStream out = connection.getOutputStream();
+			for (Map.Entry<String, String> entry : params.entrySet())
+			{
+				String key = entry.getKey();
+				String value = entry.getValue();
+
+				if (isNotFirst)
+				{
+					out.write("&".getBytes());
+					isNotFirst = true;
+				}
+				out.write(String.format("%s=%s", key, value).getBytes());
+			}
+		}
+
 		try
 		{
 			// Read HTTP status.
@@ -112,7 +158,7 @@ public class HttpRequester
 			String statusMessage = connection.getResponseMessage();
 
 			// Prepare buffer.
-			ByteArrayOutputStream out = new ByteArrayOutputStream(10 * 1024);
+			ByteArrayOutputStream bufferStream = new ByteArrayOutputStream(10 * 1024);
 			byte[] buffer = new byte[1024];
 
 			// Read response's body.
@@ -120,10 +166,10 @@ public class HttpRequester
 			int length;
 			while ((length = in.read(buffer)) != -1)
 			{
-				out.write(buffer, 0, length);
+				bufferStream.write(buffer, 0, length);
 			}
 
-			return new HttpResponse(statusCode, statusMessage, out);
+			return new HttpResponse(statusCode, statusMessage, bufferStream);
 		}
 
 		// An exception that occurs when timeout

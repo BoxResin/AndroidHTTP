@@ -22,6 +22,10 @@ public class MainActivity extends AppCompatActivity
 
 	public void onClick(View view)
 	{
+		binding.txtHttpStatus.setText("");
+		binding.txtHtml.setText("");
+		binding.btnRequest.setText("Cancel");
+
 		if (view == binding.btnRequest)
 		{
 			final String url = binding.editUrl.getText().toString();
@@ -44,9 +48,13 @@ public class MainActivity extends AppCompatActivity
 							@Override
 							public void run()
 							{
-								binding.txtHttpStatus.setText(String.format("%d %s",
-										response.getStatusCode(), response.getStatusMessage()));
-								binding.txtHtml.setText(response.getBody());
+								if (response != null)
+								{
+									binding.txtHttpStatus.setText(String.format("%d %s",
+											response.getStatusCode(), response.getStatusMessage()));
+									binding.txtHtml.setText(response.getBody());
+									binding.btnRequest.setText("Request");
+								}
 							}
 						});
 					}

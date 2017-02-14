@@ -119,9 +119,11 @@ public class HttpRequester
 
 	/**
 	 * Send HTTP request to a web server.
-	 * @return An HTML response from the web server. It will return null if timeout occurs.
+	 *
+	 * @throws SocketTimeoutException Occurs when timeout.
+	 * @return An HTML response from the web server.
 	 */
-	public HttpResponse request() throws IOException
+	public HttpResponse request() throws SocketTimeoutException, IOException
 	{
 		// Set options.
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
@@ -150,36 +152,23 @@ public class HttpRequester
 			}
 		}
 
-		try
+		// Read HTTP status.
+		int statusCode = connection.getResponseCode();
+		String statusMessage = connection.getResponseMessage();
+
+		// Prepare buffer.
+		ByteArrayOutputStream bufferStream = new ByteArrayOutputStream(10 * 1024);
+		byte[] buffer = new byte[1024];
+
+		// Read response's body.
+		InputStream in = connection.getInputStream();
+		int length;
+		while ((length = in.read(buffer)) != -1)
 		{
-			// Read HTTP status.
-			int statusCode = connection.getResponseCode();
-			String statusMessage = connection.getResponseMessage();
-
-			// Prepare buffer.
-			ByteArrayOutputStream bufferStream = new ByteArrayOutputStream(10 * 1024);
-			byte[] buffer = new byte[1024];
-
-			// Read response's body.
-			InputStream in = connection.getInputStream();
-			int length;
-			while ((length = in.read(buffer)) != -1)
-			{
-				bufferStream.write(buffer, 0, length);
-			}
-
-			return new HttpResponse(statusCode, statusMessage, bufferStream);
+			bufferStream.write(buffer, 0, length);
 		}
 
-		// An exception that occurs when timeout
-		catch (SocketTimeoutException ignored)
-		{
-			return null;
-		}
-
-		finally
-		{
-			connection.disconnect();
-		}
+		connection.disconnect();
+		return new HttpResponse(statusCode, statusMessage, bufferStream);
 	}
 }

@@ -1,4 +1,4 @@
-package boxresin.library.androidhttp;
+package boxresin.demo.androidhttp;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -7,7 +7,9 @@ import android.view.View;
 
 import java.io.IOException;
 
-import boxresin.library.androidhttp.databinding.ActivityMainBinding;
+import boxresin.demo.androidhttp.databinding.ActivityMainBinding;
+import boxresin.library.androidhttp.HttpRequester;
+import boxresin.library.androidhttp.HttpResponse;
 
 public class MainActivity extends AppCompatActivity
 {

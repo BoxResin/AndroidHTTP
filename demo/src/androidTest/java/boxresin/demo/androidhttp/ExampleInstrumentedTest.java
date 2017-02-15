@@ -1,4 +1,4 @@
-package boxresin.library.androidhttp;
+package boxresin.demo.androidhttp;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

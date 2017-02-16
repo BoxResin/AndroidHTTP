@@ -1,5 +1,7 @@
 package boxresin.library.androidhttp;
 
+import android.os.Handler;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +27,7 @@ public class HttpRequester
 	private Map<String, String> params = new TreeMap<>();
 
 	private HttpCancelListener cancelListener;
+	private Handler handler;
 
 	/**
 	 * Interface deifinition for a callback to be invoked when an HTTP request is canceled
@@ -33,9 +36,17 @@ public class HttpRequester
 	{
 		/**
 		 * A callback method to be invoked when an HTTP request is canceled
-		 * NOTE: This method is invoked in a thread where 'request' method is called.
+		 * NOTE: This method will be invoked in the UI thread.
 		 */
 		void onHttpCancel();
+	}
+
+	/**
+	 * NOTE: You have to instantiate 'HttpRequester' only in the UI thread.
+	 */
+	public HttpRequester()
+	{
+		handler = new Handler();
 	}
 
 	/**
@@ -175,7 +186,7 @@ public class HttpRequester
 		ByteArrayOutputStream bufferStream = new ByteArrayOutputStream(10 * 1024);
 		byte[] buffer = new byte[1024];
 
-		// Read response's body.
+		// Read response's body little by little in order to be ready for cancelation.
 		InputStream in = connection.getInputStream();
 		while (true)
 		{
@@ -189,8 +200,15 @@ public class HttpRequester
 			{
 				canceled = false;
 				connection.disconnect();
-				if (cancelListener != null)
-					cancelListener.onHttpCancel();
+				handler.post(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						if (cancelListener != null)
+							cancelListener.onHttpCancel();
+					}
+				});
 				return null;
 			}
 		}

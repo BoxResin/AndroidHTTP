@@ -35,14 +35,14 @@ public class HttpRequester
 	public interface HttpCancelListener
 	{
 		/**
-		 * A callback method to be invoked when an HTTP request is canceled
-		 * NOTE: This method will be invoked in the UI thread.
+		 * A callback method to be invoked when an HTTP request is canceled <br><br>
+		 * <b>NOTE: This method will be invoked in the UI thread.</b>
 		 */
 		void onHttpCancel();
 	}
 
 	/**
-	 * NOTE: You have to instantiate 'HttpRequester' only in the UI thread.
+	 * <b>NOTE: You have to instantiate 'HttpRequester' only in the UI thread.</b>
 	 */
 	public HttpRequester()
 	{
@@ -79,7 +79,8 @@ public class HttpRequester
 
 	/**
 	 * Sets HTTP method.
-	 * @param method HTTP method as String type (ex. "POST", "GET" etc) It's not case sensitive, so you can use both "POST" and "post".
+	 * @param method HTTP method as String type (ex. "POST", "GET" etc) It's not case sensitive, so
+	 *               you can use both "POST" and "post".
 	 */
 	public HttpRequester setMethod(String method)
 	{
@@ -146,8 +147,10 @@ public class HttpRequester
 	/**
 	 * Send HTTP request to a web server.
 	 *
+	 * @return An HTML response from the web server. <br><br>
+	 * <b>NOTE: It will return null if 'cancel' method is called during request. </b>
+	 *
 	 * @throws SocketTimeoutException Occurs when timeout.
-	 * @return An HTML response from the web server. It will return null if 'cancel' method is called during request.
 	 */
 	public HttpResponse request() throws SocketTimeoutException, IOException
 	{
@@ -218,8 +221,10 @@ public class HttpRequester
 	}
 
 	/**
-	 * Cancel the 'request' method.
-	 * NOTE: It doesn't terminate request immediately. If you want to know the time canceled, use cancel(listener).
+	 * Cancel the 'request' method. <br><br>
+	 * <b> Note: It doesn't terminate request immediately. If you want to know the time canceled,
+	 * use cancel(listener). </b>
+	 *
 	 * @see #cancel(HttpCancelListener)
 	 */
 	public void cancel()

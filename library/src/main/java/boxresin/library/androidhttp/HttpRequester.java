@@ -1,6 +1,10 @@
 package boxresin.library.androidhttp;
 
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
+import android.support.annotation.WorkerThread;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,6 +18,7 @@ import java.util.TreeMap;
 
 /**
  * A class to send HTTP requests.
+ * @since v1.0.0
  */
 public class HttpRequester
 {
@@ -31,27 +36,34 @@ public class HttpRequester
 
 	/**
 	 * Interface deifinition for a callback to be invoked when an HTTP request is canceled
+	 * @since v1.0.0
 	 */
 	public interface HttpCancelListener
 	{
 		/**
 		 * A callback method to be invoked when an HTTP request is canceled <br><br>
-		 * <b>NOTE: This method will be invoked in the UI thread.</b>
+		 * <b>NOTE: This method will be invoked on the UI thread.</b>
+		 *
+		 * @since v1.0.0
 		 */
+		@UiThread
 		void onHttpCancel();
 	}
 
 	/**
-	 * <b>NOTE: You have to instantiate 'HttpRequester' only in the UI thread.</b>
+	 * <b>NOTE: This constructor must only be called on the UI thread.</b>
+	 * @since v1.0.0
 	 */
+	@UiThread
 	public HttpRequester()
 	{
 		handler = new Handler();
 	}
 
 	/**
-	 * Return the URL to request.
+	 * Returns the URL to request.
 	 * @return The URL to request
+	 * @since v1.0.0
 	 */
 	public String getUrl()
 	{
@@ -61,16 +73,18 @@ public class HttpRequester
 	/**
 	 * Sets the URL to request.
 	 * @param url The URL to request
+	 * @since v1.0.0
 	 */
-	public HttpRequester setUrl(String url)
+	public HttpRequester setUrl(@NonNull String url)
 	{
 		this.url = url;
 		return this;
 	}
 
 	/**
-	 * Return HTTP method to request.
-	 * @return HTTP method as String type
+	 * Returns HTTP method to request.
+	 * @return HTTP method as String type (ex. "POST", "GET" etc)
+	 * @since v1.0.0
 	 */
 	public String getMethod()
 	{
@@ -79,18 +93,21 @@ public class HttpRequester
 
 	/**
 	 * Sets HTTP method.
-	 * @param method HTTP method as String type (ex. "POST", "GET" etc) It's not case sensitive, so
-	 *               you can use both "POST" and "post".
+	 *
+	 * @param method HTTP method as String type (ex. "POST", "GET" etc)<br>
+	 *               <b>It's not case sensitive, so you can use both "POST" and "post".</b>
+	 * @since v1.0.0
 	 */
-	public HttpRequester setMethod(String method)
+	public HttpRequester setMethod(@NonNull String method)
 	{
 		this.method = method.toUpperCase();
 		return this;
 	}
 
 	/**
-	 * Return connect-timeout.
+	 * Returns connect-timeout.
 	 * @return Connect-timeout, in milliseconds
+	 * @since v1.0.0
 	 */
 	public int getConnectTimeout()
 	{
@@ -100,6 +117,7 @@ public class HttpRequester
 	/**
 	 * Sets timeout when connecting to a web server.
 	 * @param timeout Connect-timeout, in milliseconds
+	 * @since v1.0.0
 	 */
 	public HttpRequester setConnectTimeout(int timeout)
 	{
@@ -108,8 +126,9 @@ public class HttpRequester
 	}
 
 	/**
-	 * Return read-timeout.
+	 * Returns read-timeout.
 	 * @return Read-timeout, in milliseconds
+	 * @since v1.0.0
 	 */
 	public int getReadTimeout()
 	{
@@ -119,6 +138,7 @@ public class HttpRequester
 	/**
 	 * Sets timeout when reading an HTTP response from a web server.
 	 * @param timeout Read-timeout, in milliseconds
+	 * @since v1.0.0
 	 */
 	public HttpRequester setReadTimeout(int timeout)
 	{
@@ -127,17 +147,19 @@ public class HttpRequester
 	}
 
 	/**
-	 * Add a parameter for POST method.
+	 * Adds a parameter for POST method.
 	 * If specified HTTP method is not "POST", this parameter would be ignored.
+	 * @since v1.0.0
 	 */
-	public HttpRequester addParameter(String key, String value)
+	public HttpRequester addParameter(@NonNull String key, @NonNull String value)
 	{
 		params.put(key, value);
 		return this;
 	}
 
 	/**
-	 * Clear all of parameters for POST method.
+	 * Clears all of parameters for POST method.
+	 * @since v1.0.0
 	 */
 	public void clearParameters()
 	{
@@ -145,13 +167,15 @@ public class HttpRequester
 	}
 
 	/**
-	 * Send HTTP request to a web server.
+	 * Sends HTTP request to a web server synchronously.
 	 *
 	 * @return An HTML response from the web server. <br><br>
 	 * <b>NOTE: It will return null if 'cancel' method is called during request. </b>
 	 *
 	 * @throws SocketTimeoutException Occurs when timeout.
+	 * @since v1.0.0
 	 */
+	@Nullable @WorkerThread
 	public HttpResponse request() throws SocketTimeoutException, IOException
 	{
 		// Set options.
@@ -221,11 +245,12 @@ public class HttpRequester
 	}
 
 	/**
-	 * Cancel the 'request' method. <br><br>
+	 * Cancels the 'request' method. <br><br>
 	 * <b> Note: It doesn't terminate request immediately. If you want to know the time canceled,
 	 * use cancel(listener). </b>
 	 *
 	 * @see #cancel(HttpCancelListener)
+	 * @since v1.0.0
 	 */
 	public void cancel()
 	{
@@ -233,10 +258,11 @@ public class HttpRequester
 	}
 
 	/**
-	 * Cancel the 'request' method.
+	 * Cancels the 'request' method.
 	 * @param listener Interface for a callback to be invoked when an HTTP request is canceled.
+	 * @since v1.0.0
 	 */
-	public void cancel(HttpCancelListener listener)
+	public void cancel(@Nullable HttpCancelListener listener)
 	{
 		cancelListener = listener;
 		canceled = true;

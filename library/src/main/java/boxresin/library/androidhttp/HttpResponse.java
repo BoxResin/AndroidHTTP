@@ -59,4 +59,13 @@ public class HttpResponse
 	{
 		return out.toString(encoding);
 	}
+
+	/**
+	 * Return content of a response message. It can be an HTML document or JSON-formatted data.
+	 * @return Body of a response message as byte array.
+	 */
+	public byte[] getBodyAsByteArray()
+	{
+		return out.toByteArray();
+	}
 }

@@ -2,10 +2,9 @@ package boxresin.demo.androidhttp;
 
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-
-import java.io.IOException;
 
 import boxresin.demo.androidhttp.databinding.ActivityMainBinding;
 import boxresin.library.androidhttp.HttpRequester;
@@ -34,16 +33,7 @@ public class MainActivity extends AppCompatActivity
 				@Override
 				public void onHttpCancel()
 				{
-					runOnUiThread(new Runnable()
-					{
-						@Override
-						public void run()
-						{
-							binding.btnRequest.setText("Request");
-							binding.loadingBar.setVisibility(View.GONE);
-							binding.btnRequest.setEnabled(true);
-						}
-					});
+					resetUI();
 				}
 			});
 			binding.btnRequest.setEnabled(false);
@@ -60,41 +50,38 @@ public class MainActivity extends AppCompatActivity
 			final String url = binding.editUrl.getText().toString();
 			final String method = (String) binding.spinnerHttpMethod.getSelectedItem();
 
-			new Thread()
-			{
-				@Override
-				public void run()
-				{
-					try
+			httpRequester
+					.setUrl(url)
+					.setMethod(method)
+					.request(new HttpRequester.HttpResultListener()
 					{
-						final HttpResponse response = httpRequester
-								.setUrl(url)
-								.setMethod(method)
-								.request();
-
-						runOnUiThread(new Runnable()
+						@Override
+						public void onHttpResult(@Nullable HttpResponse response, @Nullable Exception exception)
 						{
-							@Override
-							public void run()
+							resetUI();
+
+							if (response != null)
 							{
-								if (response != null)
-								{
-									binding.txtHttpStatus.setText(String.format("%d %s",
-											response.getStatusCode(), response.getStatusMessage()));
-									binding.txtHtml.setText(response.getBody());
-									binding.btnRequest.setText("Request");
-									binding.loadingBar.setVisibility(View.GONE);
-									binding.btnRequest.setEnabled(true);
-								}
+								binding.txtHttpStatus.setText(String.format("%d %s",
+										response.getStatusCode(), response.getStatusMessage()));
+								binding.txtHtml.setText(response.getBody());
+								binding.btnRequest.setText("Request");
+								binding.loadingBar.setVisibility(View.GONE);
+								binding.btnRequest.setEnabled(true);
 							}
-						});
-					}
-					catch (IOException ignored)
-					{
-						ignored.printStackTrace();
-					}
-				}
-			}.start();
+
+							if (exception != null)
+								exception.printStackTrace();
+						}
+					});
 		}
+	}
+
+	private void resetUI()
+	{
+		binding.txtHttpStatus.setText("");
+		binding.btnRequest.setText("Request");
+		binding.loadingBar.setVisibility(View.GONE);
+		binding.btnRequest.setEnabled(true);
 	}
 }

@@ -59,6 +59,7 @@ public class HttpRequester
 	{
 		/**
 		 * A callback method to be invoked when an HTTP request is finished <br><br>
+		 * <b>NOTE: This method will be invoked on the UI thread.</b>
 		 *
 		 * @param response  An HTML response from the web server <b>It will be null if 'cancel'
 		 *                  method is called during request.</b>
@@ -68,6 +69,7 @@ public class HttpRequester
 		 *                  <b>SocketTimeoutException</b> occurs when timeout.
 		 * @since v1.0.0
 		 */
+		@UiThread
 		void onHttpResult(@Nullable HttpResponse response, @Nullable Exception exception);
 	}
 

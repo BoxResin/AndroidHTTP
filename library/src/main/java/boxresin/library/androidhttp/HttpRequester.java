@@ -26,16 +26,17 @@ public class HttpRequester
 	private String method = ""; // HTTP method
 	private int connectTimeout; // Timeout when connecting to a web server, in milliseconds
 	private int readTimeout; // Timeout when reading an HTTP response from a web server, in milliseconds
+
 	private boolean canceled; // Whether request is canceled or not
+	private HttpCancelListener cancelListener;
 
 	// Map that contains POST parameters
 	private Map<String, String> params = new TreeMap<>();
 
-	private HttpCancelListener cancelListener;
 	private Handler handler;
 
 	/**
-	 * Interface deifinition for a callback to be invoked when an HTTP request is canceled
+	 * Interface for a callback to be invoked when an HTTP request is canceled
 	 * @since v1.0.0
 	 */
 	public interface HttpCancelListener
@@ -48,6 +49,26 @@ public class HttpRequester
 		 */
 		@UiThread
 		void onHttpCancel();
+	}
+
+	/**
+	 * Interface for a callback to be invoked when an HTTP request is finished
+	 * @since v1.0.0
+	 */
+	public interface HttpResultListener
+	{
+		/**
+		 * A callback method to be invoked when an HTTP request is finished <br><br>
+		 *
+		 * @param response  An HTML response from the web server <b>It will be null if 'cancel'
+		 *                  method is called during request.</b>
+		 *
+		 * @param exception An exception occurred during request. If there were no exceptions, it
+		 *                  will be null <br>
+		 *                  <b>SocketTimeoutException</b> occurs when timeout.
+		 * @since v1.0.0
+		 */
+		void onHttpResult(@Nullable HttpResponse response, @Nullable Exception exception);
 	}
 
 	/**
@@ -169,15 +190,20 @@ public class HttpRequester
 	/**
 	 * Sends HTTP request to a web server synchronously.
 	 *
-	 * @return An HTML response from the web server. <br><br>
+	 * @return An HTML response from the web server <br><br>
 	 * <b>NOTE: It will return null if 'cancel' method is called during request. </b>
 	 *
 	 * @throws SocketTimeoutException Occurs when timeout.
+	 * @see #request(HttpResultListener)
 	 * @since v1.0.0
 	 */
 	@Nullable @WorkerThread
 	public HttpResponse request() throws SocketTimeoutException, IOException
 	{
+		// Reset
+		cancelListener = null;
+		canceled = false;
+
 		// Set options.
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setRequestMethod(method);
@@ -225,7 +251,6 @@ public class HttpRequester
 			// Check if canceled.
 			if (canceled)
 			{
-				canceled = false;
 				connection.disconnect();
 				handler.post(new Runnable()
 				{
@@ -245,9 +270,24 @@ public class HttpRequester
 	}
 
 	/**
+	 * Sends HTTP request to a web server asynchronously. <br>
+	 * <b>NOTE: This method must be called on the UI thread.</b>
+	 *
+	 * @param listener Interface for a callback to be invoked when an HTTP request is finished
+	 * @see #request()
+	 * @since v1.0.0
+	 */
+	@UiThread
+	public void request(HttpResultListener listener)
+	{
+		new RequestTask(this, listener).execute();
+	}
+
+	/**
 	 * Cancels the 'request' method. <br><br>
-	 * <b> Note: It doesn't terminate request immediately. If you want to know the time canceled,
-	 * use cancel(listener). </b>
+	 * <b> NOTE: It doesn't terminate request immediately. If you want to know the time canceled,
+	 * use {@link #cancel(HttpCancelListener)}. If you called 'request' method several times
+	 * previously, all requests would be canceled.</b>
 	 *
 	 * @see #cancel(HttpCancelListener)
 	 * @since v1.0.0
@@ -258,8 +298,11 @@ public class HttpRequester
 	}
 
 	/**
-	 * Cancels the 'request' method.
-	 * @param listener Interface for a callback to be invoked when an HTTP request is canceled.
+	 * Cancels the 'request' method. <br><br>
+	 * <b> NOTE: If you called 'request' method several times previously, all requests would be
+	 * canceled.</b>
+	 *
+	 * @param listener Interface for a callback to be invoked when an HTTP request is canceled
 	 * @since v1.0.0
 	 */
 	public void cancel(@Nullable HttpCancelListener listener)

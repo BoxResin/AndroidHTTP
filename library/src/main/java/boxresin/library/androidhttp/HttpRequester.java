@@ -177,9 +177,14 @@ public class HttpRequester
 
 		// Read response's body.
 		InputStream in = connection.getInputStream();
-		int length;
-		while ((length = in.read(buffer)) != -1)
+		while (true)
 		{
+			int length = in.read(buffer);
+			if (length == -1)
+				break;
+			bufferStream.write(buffer, 0, length);
+
+			// Check if canceled.
 			if (canceled)
 			{
 				canceled = false;
@@ -188,7 +193,6 @@ public class HttpRequester
 					cancelListener.onHttpCancel();
 				return null;
 			}
-			bufferStream.write(buffer, 0, length);
 		}
 
 		connection.disconnect();
@@ -198,6 +202,7 @@ public class HttpRequester
 	/**
 	 * Cancel the 'request' method.
 	 * NOTE: It doesn't terminate request immediately. If you want to know the time canceled, use cancel(listener).
+	 * @see #cancel(HttpCancelListener)
 	 */
 	public void cancel()
 	{

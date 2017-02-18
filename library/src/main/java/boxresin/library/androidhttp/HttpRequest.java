@@ -1,7 +1,16 @@
 package boxresin.library.androidhttp;
 
+import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.annotation.UiThread;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Map;
 
 /**
@@ -11,21 +20,36 @@ import java.util.Map;
 public class HttpRequest
 {
 	// @formatter:off
-	String  url    = "";    // URL to requst
-	String  method = "";    // HTTP method
-	int     connectTimeout; // Timeout when connecting to a web server, in milliseconds
-	int     readTimeout;    // Timeout when reading an HTTP response from a web server, in milliseconds
-	boolean canceled;       // Whether request is canceled or not
+	private String  url    = "";    // URL to requst
+	private String  method = "";    // HTTP method
+	private int     connectTimeout; // Timeout when connecting to a web server, in milliseconds
+	private int     readTimeout;    // Timeout when reading an HTTP response from a web server, in milliseconds
+	private boolean canceled;       // Whether request is canceled or not
+	private boolean launching;      // Whether request is in progress or not.
 	// @formatter:on
 
 	// Map that contains POST parameters
-	Map<String, String> params;
+	private Map<String, String> params;
+
+	private HttpLauncher.HttpCancelListener cancelListener;
+	private Handler handler;
+
+	/**
+	 * <b>NOTE: This constructor must only be called on the UI thread.</b>
+	 * @since v1.0.0
+	 */
+	@UiThread
+	public HttpRequest()
+	{
+		handler = new Handler();
+	}
 
 	/**
 	 * Returns the URL to request.
 	 * @return The URL to request
 	 * @since v1.0.0
 	 */
+	@NonNull
 	public String getUrl()
 	{
 		return url;
@@ -47,6 +71,7 @@ public class HttpRequest
 	 * @return HTTP method as String type (ex. "POST", "GET" etc)
 	 * @since v1.0.0
 	 */
+	@NonNull
 	public String getMethod()
 	{
 		return method;
@@ -54,7 +79,6 @@ public class HttpRequest
 
 	/**
 	 * Sets HTTP method.
-	 *
 	 * @param method HTTP method as String type (ex. "POST", "GET" etc)<br>
 	 *               <b>It's not case sensitive, so you can use both "POST" and "post".</b>
 	 * @since v1.0.0
@@ -125,5 +149,117 @@ public class HttpRequest
 	public void clearParameters()
 	{
 		params.clear();
+	}
+
+	/**
+	 * Returns whether HttpRequest is ready to be launched. If it returns false, you should not
+	 * launch that HttpRequest object.
+	 * @return Whether HttpRequest is ready to be launched
+	 * @see #waitUntilLaunchable()
+	 * @since v1.0.0
+	 */
+	public boolean canBeLaunched()
+	{
+		return !launching;
+	}
+
+	/**
+	 * Blocks current thread until the HttpRequest object can be launched. <br>
+	 * <b>NOTE: Do not use this method on a thread where {@link HttpLauncher#launch(HttpRequest)} called.</b>
+	 * @see #canBeLaunched()
+	 * @since v1.0.0
+	 */
+	public void waitUntilLaunchable() throws InterruptedException
+	{
+		if (launching)
+			wait();
+	}
+
+	@Nullable
+	HttpResponse request() throws IOException
+	{
+		launching = true;
+
+		// Set options.
+		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+		connection.setRequestMethod(method);
+		connection.setConnectTimeout(connectTimeout);
+		connection.setReadTimeout(readTimeout);
+
+		// Only for POST method
+		if (method.equals("POST"))
+		{
+			connection.setDoOutput(true);
+
+			// Add POST parameters.
+			boolean isNotFirst = false;
+			OutputStream out = connection.getOutputStream();
+			for (Map.Entry<String, String> entry : params.entrySet())
+			{
+				String key = entry.getKey();
+				String value = entry.getValue();
+
+				if (isNotFirst)
+					out.write("&".getBytes());
+				else isNotFirst = true;
+
+				out.write(String.format("%s=%s", key, value).getBytes());
+			}
+		}
+
+		// Read HTTP status.
+		int statusCode = connection.getResponseCode();
+		String statusMessage = connection.getResponseMessage();
+
+		// Prepare buffer.
+		ByteArrayOutputStream bufferStream = new ByteArrayOutputStream(10 * 1024);
+		byte[] buffer = new byte[1024];
+
+		// Read response's body little by little in order to be ready for cancelation.
+		InputStream in = connection.getInputStream();
+		while (true)
+		{
+			int length = in.read(buffer);
+			if (length == -1)
+				break;
+			bufferStream.write(buffer, 0, length);
+
+			// Check if canceled.
+			if (canceled)
+			{
+				connection.disconnect();
+				canceled = false;
+				handler.post(new Runnable()
+				{
+					@Override
+					public void run()
+					{
+						if (cancelListener != null)
+							cancelListener.onHttpCancel();
+						cancelListener = null;
+					}
+				});
+				launching = false;
+				notify();
+				return null;
+			}
+		}
+
+		connection.disconnect();
+		launching = false;
+		notify();
+		return new HttpResponse(statusCode, statusMessage, bufferStream);
+	}
+
+	boolean cancel(@Nullable HttpLauncher.HttpCancelListener cancelListener)
+	{
+		// If it hasn't been launched, 'cancel' method will fail always.
+		if (!launching)
+			return false;
+
+		// Otherwise, the cancel succeeds.
+		this.cancelListener = cancelListener;
+		canceled = true;
+		return true;
 	}
 }

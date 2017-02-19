@@ -7,13 +7,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import boxresin.demo.androidhttp.databinding.ActivityMainBinding;
-import boxresin.library.androidhttp.HttpRequester;
+import boxresin.library.androidhttp.HttpLauncher;
+import boxresin.library.androidhttp.HttpRequest;
 import boxresin.library.androidhttp.HttpResponse;
 
 public class MainActivity extends AppCompatActivity
 {
 	private ActivityMainBinding binding;
-	private HttpRequester httpRequester;
+	private HttpRequest httpRequest;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
@@ -21,14 +22,14 @@ public class MainActivity extends AppCompatActivity
 		super.onCreate(savedInstanceState);
 		binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
 
-		httpRequester = new HttpRequester();
+		httpRequest = new HttpRequest();
 	}
 
 	public void onClick(View view)
 	{
 		if (binding.btnRequest.getText().equals("Cancel"))
 		{
-			httpRequester.cancel(new HttpRequester.HttpCancelListener()
+			HttpLauncher.cancel(httpRequest, new HttpLauncher.HttpCancelListener()
 			{
 				@Override
 				public void onHttpCancel()
@@ -50,30 +51,30 @@ public class MainActivity extends AppCompatActivity
 			final String url = binding.editUrl.getText().toString();
 			final String method = (String) binding.spinnerHttpMethod.getSelectedItem();
 
-			httpRequester
-					.setUrl(url)
-					.setMethod(method)
-					.request(new HttpRequester.HttpResultListener()
+			httpRequest.setUrl(url)
+					.setMethod(method);
+
+			HttpLauncher.launch(httpRequest, new HttpLauncher.HttpResultListener()
+			{
+				@Override
+				public void onHttpResult(@Nullable HttpResponse response, @Nullable Exception exception)
+				{
+					resetUI();
+
+					if (response != null)
 					{
-						@Override
-						public void onHttpResult(@Nullable HttpResponse response, @Nullable Exception exception)
-						{
-							resetUI();
+						binding.txtHttpStatus.setText(String.format("%d %s",
+								response.getStatusCode(), response.getStatusMessage()));
+						binding.txtHtml.setText(response.getBody());
+						binding.btnRequest.setText("Request");
+						binding.loadingBar.setVisibility(View.GONE);
+						binding.btnRequest.setEnabled(true);
+					}
 
-							if (response != null)
-							{
-								binding.txtHttpStatus.setText(String.format("%d %s",
-										response.getStatusCode(), response.getStatusMessage()));
-								binding.txtHtml.setText(response.getBody());
-								binding.btnRequest.setText("Request");
-								binding.loadingBar.setVisibility(View.GONE);
-								binding.btnRequest.setEnabled(true);
-							}
-
-							if (exception != null)
-								exception.printStackTrace();
-						}
-					});
+					if (exception != null)
+						exception.printStackTrace();
+				}
+			});
 		}
 	}
 

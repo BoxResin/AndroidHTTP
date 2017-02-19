@@ -9,15 +9,15 @@ import java.io.IOException;
 /**
  * A Task that sends HTTP request asynchronously
  */
-final class RequestTask extends AsyncTask<Object, Object, HttpResponse>
+final class LaunchTask extends AsyncTask<Object, Object, HttpResponse>
 {
-	private HttpRequester requester;
+	private HttpRequest request;
 	private Exception exception;
-	private HttpRequester.HttpResultListener listener;
+	private HttpLauncher.HttpResultListener listener;
 
-	RequestTask(@NonNull HttpRequester requester, @Nullable HttpRequester.HttpResultListener listener)
+	LaunchTask(@NonNull HttpRequest request, @Nullable HttpLauncher.HttpResultListener listener)
 	{
-		this.requester = requester;
+		this.request = request;
 		this.listener = listener;
 	}
 
@@ -27,7 +27,7 @@ final class RequestTask extends AsyncTask<Object, Object, HttpResponse>
 		HttpResponse response = null;
 		try
 		{
-			response = requester.request();
+			response = HttpLauncher.launch(request);
 		}
 		catch (IOException e)
 		{

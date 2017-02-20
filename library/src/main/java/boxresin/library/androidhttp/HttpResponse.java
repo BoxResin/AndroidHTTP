@@ -1,11 +1,11 @@
 package boxresin.library.androidhttp;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.util.List;
 
 /**
  * A class representing HTTP response.
@@ -16,17 +16,17 @@ public class HttpResponse
 {
 	private int statusCode;
 	private String statusMessage;
-	private ByteArrayOutputStream body;
+	private ByteArrayOutputStream bodyStream;
 	private HttpURLConnection connection;
 
 	/**
 	 * Preventing from instantiation of HttpResponse with constructor
 	 */
-	HttpResponse(int statusCode, String statusMessage, ByteArrayOutputStream body, HttpURLConnection connection)
+	HttpResponse(int statusCode, String statusMessage, ByteArrayOutputStream bodyStream, HttpURLConnection connection)
 	{
 		this.statusCode = statusCode;
 		this.statusMessage = statusMessage;
-		this.body = body;
+		this.bodyStream = bodyStream;
 		this.connection = connection;
 	}
 
@@ -51,13 +51,23 @@ public class HttpResponse
 	}
 
 	/**
-	 * Returns content of a response message. It can be an HTML document or JSON-formatted data.
+	 * Returns content of a response message. It can be an HTML document or JSON-formatted data. <br>
+	 * <b>NOTE: It detects content encoding automatically.</b>
 	 * @return Body of a response message as String type
 	 * @since v1.0.0
 	 */
+	@NonNull
 	public String getBody()
 	{
-		return body.toString();
+		try
+		{
+			String encoding = getBodyEncoding();
+			return bodyStream.toString(encoding);
+		}
+		catch (Exception e)
+		{
+			return bodyStream.toString();
+		}
 	}
 
 	/**
@@ -66,9 +76,35 @@ public class HttpResponse
 	 * @return Body of a response message as String type with specified encoding
 	 * @since v1.0.0
 	 */
+	@NonNull
 	public String getBody(String encoding) throws UnsupportedEncodingException
 	{
-		return body.toString(encoding);
+		return bodyStream.toString(encoding);
+	}
+
+	/**
+	 * Returns encoding of content in a response message. It will be null if there's no encoding
+	 *         information in the response header.
+	 * @return content's encoding
+	 */
+	@Nullable
+	public String getBodyEncoding()
+	{
+		try
+		{
+			String contentType = getHeader("Content-Type");
+			String[] params = contentType.split(";");
+			for (String param : params)
+			{
+				param = param.trim();
+				if (param.startsWith("charset="))
+					return param.replace("charset=", "");
+			}
+		}
+		catch (Exception ignored)
+		{
+		}
+		return null;
 	}
 
 	/**
@@ -79,14 +115,7 @@ public class HttpResponse
 	@Nullable
 	public String getHeader(String key)
 	{
-		List<String> header = connection.getHeaderFields().get(key);
-		if (header == null || header.size() == 0)
-			return "";
-
-		StringBuilder result = new StringBuilder();
-		for (String str : header)
-			result.append("; ").append(str);
-		return result.substring(2);
+		return connection.getHeaderField(key);
 	}
 
 	/**
@@ -96,6 +125,6 @@ public class HttpResponse
 	 */
 	public byte[] getBodyAsByteArray()
 	{
-		return body.toByteArray();
+		return bodyStream.toByteArray();
 	}
 }

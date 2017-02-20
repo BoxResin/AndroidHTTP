@@ -12,16 +12,16 @@ public class HttpResponse
 {
 	private int statusCode;
 	private String statusMessage;
-	private ByteArrayOutputStream out;
+	private ByteArrayOutputStream body;
 
 	/**
 	 * Preventing from instantiation of HttpResponse with constructor
 	 */
-	HttpResponse(int statusCode, String statusMessage, ByteArrayOutputStream out)
+	HttpResponse(int statusCode, String statusMessage, ByteArrayOutputStream body)
 	{
 		this.statusCode = statusCode;
 		this.statusMessage = statusMessage;
-		this.out = out;
+		this.body = body;
 	}
 
 	/**
@@ -51,7 +51,7 @@ public class HttpResponse
 	 */
 	public String getBody()
 	{
-		return out.toString();
+		return body.toString();
 	}
 
 	/**
@@ -62,7 +62,7 @@ public class HttpResponse
 	 */
 	public String getBody(String encoding) throws UnsupportedEncodingException
 	{
-		return out.toString(encoding);
+		return body.toString(encoding);
 	}
 
 	/**
@@ -72,6 +72,6 @@ public class HttpResponse
 	 */
 	public byte[] getBodyAsByteArray()
 	{
-		return out.toByteArray();
+		return body.toByteArray();
 	}
 }

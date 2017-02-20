@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.support.annotation.WorkerThread;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -164,11 +165,15 @@ public class HttpRequest
 	}
 
 	/**
-	 * Blocks current thread until the HttpRequest object can be launched. <br>
-	 * <b>NOTE: Do not use this method on a thread where {@link HttpLauncher#launch(HttpRequest)} called.</b>
+	 * Blocks current thread until this HttpRequest object can be launched. <br>
+	 *
+	 * <b>NOTE: Do not use this method on a thread where {@link HttpLauncher#launch(HttpRequest)}
+	 * called. <br>Do not invoke it on the UI thread.</b>
+	 *
 	 * @see #canBeLaunched()
 	 * @since v1.0.0
 	 */
+	@WorkerThread
 	public void waitUntilLaunchable() throws InterruptedException
 	{
 		if (launching)
@@ -229,6 +234,9 @@ public class HttpRequest
 			{
 				connection.disconnect();
 				canceled = false;
+				launching = false;
+				notify();
+
 				handler.post(new Runnable()
 				{
 					@Override
@@ -239,8 +247,6 @@ public class HttpRequest
 						cancelListener = null;
 					}
 				});
-				launching = false;
-				notify();
 				return null;
 			}
 		}
@@ -253,11 +259,11 @@ public class HttpRequest
 
 	boolean cancel(@Nullable HttpLauncher.HttpCancelListener cancelListener)
 	{
-		// If it hasn't been launched, 'cancel' method will fail always.
+		// If it hasn't been launched, 'cancel()' method will be failed always.
 		if (!launching)
 			return false;
 
-		// Otherwise, the cancel succeeds.
+		// Otherwise, 'cancel()' succeeds.
 		this.cancelListener = cancelListener;
 		canceled = true;
 		return true;

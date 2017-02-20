@@ -27,6 +27,7 @@ public class HttpLauncher
 		 * A callback method to be invoked when an HTTP request is canceled <br><br>
 		 * <b>NOTE: This method will be invoked on the UI thread.</b>
 		 *
+		 * @see #cancel(HttpRequest, HttpCancelListener)
 		 * @since v1.0.0
 		 */
 		@UiThread
@@ -44,12 +45,15 @@ public class HttpLauncher
 		 * <b>NOTE: This method will be invoked on the UI thread.</b>
 		 *
 		 * @param response  An HTML response from the web server. <b>It will be null if the
-		 *                  specified HttpRequest object can't be launched or is canceled by
-		 *                  'cancel' method during request.</b>
+		 *                  specified HttpRequest object is canceled by 'cancel()' method during
+		 *                  request.</b>
 		 *
 		 * @param exception An exception occurred during request. If there were no exceptions, it
 		 *                  will be null. <br>
-		 *                  <b>SocketTimeoutException</b> occurs when timeout.
+		 *                  <b>SocketTimeoutException</b> would be thrown when timeout. <br>
+		 *                  <b>IOException</b> would be thrown when a network error occurs.
+		 *
+		 * @see #launch(HttpRequest, HttpResultListener)
 		 * @since v1.0.0
 		 */
 		@UiThread
@@ -58,7 +62,7 @@ public class HttpLauncher
 
 	/**
 	 * Sends HTTP request to a web server synchronously.
-	 * @param request An HTTP request to launch
+	 * @param request An HTTP request to send
 	 * @return An HTML response from the web server <br><br>
 	 *
 	 * <b>NOTE: It will return null if the specified HttpRequest object can't be launched or is
@@ -85,15 +89,22 @@ public class HttpLauncher
 	 * Sends HTTP request to a web server asynchronously. <br>
 	 * <b>NOTE: This method must be called on the UI thread.</b>
 	 *
-	 * @param request An HTTP request to launch
+	 * @param request An HTTP request to send
 	 * @param listener Interface for a callback to be invoked when an HTTP request is finished
+	 * @return true if the specified HttpRequest object can be launched, false otherwise.
 	 * @see #launch(HttpRequest)
+	 * @see HttpCancelListener
 	 * @since v1.0.0
 	 */
 	@UiThread
-	public static void launch(HttpRequest request, HttpResultListener listener)
+	public static boolean launch(HttpRequest request, HttpResultListener listener)
 	{
-		new LaunchTask(request, listener).execute();
+		if (request.canBeLaunched())
+		{
+			new LaunchTask(request, listener).execute();
+			return true;
+		}
+		else return false;
 	}
 
 	/**
@@ -120,6 +131,7 @@ public class HttpLauncher
 	 * @param request An HTTP request to cancel
 	 * @param listener Interface for a callback to be invoked when an HTTP request is canceled
 	 * @see #cancel(HttpRequest)
+	 * @see HttpCancelListener
 	 * @since v1.0.0
 	 */
 	public static boolean cancel(HttpRequest request, HttpLauncher.HttpCancelListener listener)

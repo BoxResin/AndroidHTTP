@@ -7,7 +7,7 @@ import android.support.annotation.Nullable;
 import java.io.IOException;
 
 /**
- * A Task that sends HTTP request asynchronously
+ * An AsyncTask to send HTTP request asynchronously
  */
 final class LaunchTask extends AsyncTask<Object, Object, HttpResponse>
 {

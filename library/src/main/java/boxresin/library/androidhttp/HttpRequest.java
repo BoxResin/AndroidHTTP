@@ -13,6 +13,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * A class representing HTTP request.
@@ -27,10 +28,11 @@ public class HttpRequest
 	private int     readTimeout;    // Timeout when reading an HTTP response from a web server, in milliseconds
 	private boolean canceled;       // Whether request is canceled or not
 	private boolean launching;      // Whether request is in progress or not.
-	// @formatter:on
+	private boolean waiting;        // Whether some thread is blocked by 'waitUntilLaunchable()' method.
 
-	// Map that contains POST parameters
-	private Map<String, String> params;
+	private Map<String, String> params  = new TreeMap<>(); // Map that contains POST parameters
+	private Map<String, String> headers = new TreeMap<>(); // Map that contains request headers
+	// @formatter:on
 
 	private HttpLauncher.HttpCancelListener cancelListener;
 	private Handler handler;
@@ -177,7 +179,10 @@ public class HttpRequest
 	public void waitUntilLaunchable() throws InterruptedException
 	{
 		if (launching)
+		{
+			waiting = true;
 			wait();
+		}
 	}
 
 	@Nullable
@@ -235,7 +240,11 @@ public class HttpRequest
 				connection.disconnect();
 				canceled = false;
 				launching = false;
-				notify();
+				if (waiting)
+				{
+					waiting = false;
+					notifyAll();
+				}
 
 				handler.post(new Runnable()
 				{
@@ -253,7 +262,11 @@ public class HttpRequest
 
 		connection.disconnect();
 		launching = false;
-		notify();
+		if (waiting)
+		{
+			waiting = false;
+			notifyAll();
+		}
 		return new HttpResponse(statusCode, statusMessage, bufferStream);
 	}
 

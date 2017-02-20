@@ -240,6 +240,8 @@ public class HttpRequest
 			}
 		}
 
+		connection.connect();
+
 		// Read HTTP status.
 		int statusCode = connection.getResponseCode();
 		String statusMessage = connection.getResponseMessage();

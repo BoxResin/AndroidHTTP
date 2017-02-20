@@ -35,10 +35,10 @@ public class HttpLauncher
 	}
 
 	/**
-	 * Interface for a callback to be invoked when an HTTP request is finished
+	 * Interface for an observation to an HTTP request task.
 	 * @since v1.0.0
 	 */
-	public interface HttpResultListener
+	public interface HttpTaskListener
 	{
 		/**
 		 * A callback method to be invoked when an HTTP request is finished <br><br>
@@ -53,7 +53,7 @@ public class HttpLauncher
 		 *                  <b>SocketTimeoutException</b> would be thrown when timeout. <br>
 		 *                  <b>IOException</b> would be thrown when a network error occurs.
 		 *
-		 * @see #launch(HttpRequest, HttpResultListener)
+		 * @see #launch(HttpRequest, HttpTaskListener)
 		 * @since v1.0.0
 		 */
 		@UiThread
@@ -69,7 +69,7 @@ public class HttpLauncher
 	 * canceled by 'cancel' method during request. </b>
 	 *
 	 * @throws SocketTimeoutException Occurs when timeout.
-	 * @see #launch(HttpRequest, HttpResultListener)
+	 * @see #launch(HttpRequest, HttpTaskListener)
 	 * @since v1.0.0
 	 */
 	@Nullable
@@ -97,7 +97,7 @@ public class HttpLauncher
 	 * @since v1.0.0
 	 */
 	@UiThread
-	public static boolean launch(HttpRequest request, HttpResultListener listener)
+	public static boolean launch(HttpRequest request, HttpTaskListener listener)
 	{
 		if (request.canBeLaunched())
 		{
@@ -136,8 +136,6 @@ public class HttpLauncher
 	 */
 	public static boolean cancel(HttpRequest request, HttpLauncher.HttpCancelListener listener)
 	{
-		if (requests.contains(request))
-			return request.cancel(listener);
-		else return false;
+		return requests.contains(request) && request.cancel(listener);
 	}
 }

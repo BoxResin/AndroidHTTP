@@ -13,9 +13,9 @@ final class LaunchTask extends AsyncTask<Object, Object, HttpResponse>
 {
 	private HttpRequest request;
 	private Exception exception;
-	private HttpLauncher.HttpResultListener listener;
+	private HttpLauncher.HttpTaskListener listener;
 
-	LaunchTask(@NonNull HttpRequest request, @Nullable HttpLauncher.HttpResultListener listener)
+	LaunchTask(@NonNull HttpRequest request, @Nullable HttpLauncher.HttpTaskListener listener)
 	{
 		this.request = request;
 		this.listener = listener;

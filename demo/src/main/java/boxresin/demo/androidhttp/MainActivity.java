@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity
 			httpRequest.setUrl(url)
 					.setMethod(method);
 
-			HttpLauncher.launch(httpRequest, new HttpLauncher.HttpResultListener()
+			HttpLauncher.launch(httpRequest, new HttpLauncher.HttpTaskListener()
 			{
 				@Override
 				public void onHttpResult(@Nullable HttpResponse response, @Nullable Exception exception)

@@ -1,7 +1,11 @@
 package boxresin.library.androidhttp;
 
+import android.support.annotation.Nullable;
+
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A class representing HTTP response.
@@ -13,15 +17,17 @@ public class HttpResponse
 	private int statusCode;
 	private String statusMessage;
 	private ByteArrayOutputStream body;
+	private final Map<String, List<String>> headerFields;
 
 	/**
 	 * Preventing from instantiation of HttpResponse with constructor
 	 */
-	HttpResponse(int statusCode, String statusMessage, ByteArrayOutputStream body)
+	HttpResponse(int statusCode, String statusMessage, ByteArrayOutputStream body, Map<String, List<String>> headerFields)
 	{
 		this.statusCode = statusCode;
 		this.statusMessage = statusMessage;
 		this.body = body;
+		this.headerFields = headerFields;
 	}
 
 	/**
@@ -63,6 +69,24 @@ public class HttpResponse
 	public String getBody(String encoding) throws UnsupportedEncodingException
 	{
 		return body.toString(encoding);
+	}
+
+	/**
+	 * Returns a header of a response message by specified key. <b>The key is case-sensitive.</b>
+	 * @return A header of a response message. It will be null if there's no such header.
+	 * @since v1.0.0
+	 */
+	@Nullable
+	public String getHeader(String key)
+	{
+		List<String> header = headerFields.get(key);
+		if (header == null || header.size() == 0)
+			return "";
+
+		StringBuilder result = new StringBuilder();
+		for (String str : header)
+			result.append("; ").append(str);
+		return result.substring(2);
 	}
 
 	/**

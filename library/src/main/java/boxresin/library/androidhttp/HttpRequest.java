@@ -12,6 +12,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -243,6 +244,9 @@ public class HttpRequest
 		int statusCode = connection.getResponseCode();
 		String statusMessage = connection.getResponseMessage();
 
+		// Read response headers.
+		Map<String, List<String>> headerFields = connection.getHeaderFields();
+
 		// Prepare buffer.
 		ByteArrayOutputStream bufferStream = new ByteArrayOutputStream(10 * 1024);
 		byte[] buffer = new byte[1024];
@@ -289,7 +293,7 @@ public class HttpRequest
 			waiting = false;
 			notifyAll();
 		}
-		return new HttpResponse(statusCode, statusMessage, bufferStream);
+		return new HttpResponse(statusCode, statusMessage, bufferStream, headerFields);
 	}
 
 	boolean cancel(@Nullable HttpLauncher.HttpCancelListener cancelListener)

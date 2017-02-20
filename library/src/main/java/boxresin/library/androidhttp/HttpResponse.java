@@ -4,8 +4,8 @@ import android.support.annotation.Nullable;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A class representing HTTP response.
@@ -17,17 +17,17 @@ public class HttpResponse
 	private int statusCode;
 	private String statusMessage;
 	private ByteArrayOutputStream body;
-	private final Map<String, List<String>> headerFields;
+	private HttpURLConnection connection;
 
 	/**
 	 * Preventing from instantiation of HttpResponse with constructor
 	 */
-	HttpResponse(int statusCode, String statusMessage, ByteArrayOutputStream body, Map<String, List<String>> headerFields)
+	HttpResponse(int statusCode, String statusMessage, ByteArrayOutputStream body, HttpURLConnection connection)
 	{
 		this.statusCode = statusCode;
 		this.statusMessage = statusMessage;
 		this.body = body;
-		this.headerFields = headerFields;
+		this.connection = connection;
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class HttpResponse
 	@Nullable
 	public String getHeader(String key)
 	{
-		List<String> header = headerFields.get(key);
+		List<String> header = connection.getHeaderFields().get(key);
 		if (header == null || header.size() == 0)
 			return "";
 

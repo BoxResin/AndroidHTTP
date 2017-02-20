@@ -295,7 +295,7 @@ public class HttpRequest
 			waiting = false;
 			notifyAll();
 		}
-		return new HttpResponse(statusCode, statusMessage, bufferStream, headerFields);
+		return new HttpResponse(statusCode, statusMessage, bufferStream, connection);
 	}
 
 	boolean cancel(@Nullable HttpLauncher.HttpCancelListener cancelListener)

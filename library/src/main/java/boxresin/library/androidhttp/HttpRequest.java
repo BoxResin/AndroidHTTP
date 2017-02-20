@@ -155,6 +155,24 @@ public class HttpRequest
 	}
 
 	/**
+	 * Adds a header for request.
+	 * @since v1.0.0
+	 */
+	public HttpRequest addHeader(@NonNull String key, @NonNull String value)
+	{
+		headers.put(key, value);
+		return this;
+	}
+
+	/**
+	 * Clears all of headers for request.
+	 */
+	public void clearHeaders()
+	{
+		headers.clear();
+	}
+
+	/**
 	 * Returns whether HttpRequest is ready to be launched. If it returns false, you should not
 	 * launch that HttpRequest object.
 	 * @return Whether HttpRequest is ready to be launched
@@ -195,6 +213,10 @@ public class HttpRequest
 		connection.setRequestMethod(method);
 		connection.setConnectTimeout(connectTimeout);
 		connection.setReadTimeout(readTimeout);
+
+		// Add headers.
+		for (Map.Entry<String, String> entry : headers.entrySet())
+			connection.setRequestProperty(entry.getKey(), entry.getValue());
 
 		// Only for POST method
 		if (method.equals("POST"))

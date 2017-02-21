@@ -17,7 +17,7 @@ import java.util.List;
 public class HttpLauncher
 {
 	// HttpRequest list in progress. It will be removed from the list if the task is finished or canceled.
-	private static List<HttpRequest> requests = new ArrayList<>();
+	static List<HttpRequest> requests = new ArrayList<>();
 
 	/**
 	 * Interface for a callback to be invoked when an HTTP request is canceled
@@ -43,12 +43,22 @@ public class HttpLauncher
 	public interface HttpTaskListener
 	{
 		/**
-		 * A callback method to be invoked periodically when an HTTP request is in progress
-		 * @param response Intermediate response
-		 * @param chunk    Partial of response message body newly read
-		 * @param progress
+		 * A callback method to be invoked periodically when an HTTP request is in progress. <br>
+		 * <b>NOTE: This method will be invoked on the UI thread.</b>
+		 *
+		 * @param response    Interim response. It consists of status code/message and response
+		 *                    header. <br><b>NOTE: Do not invoke its getBody() method. The response
+		 *                    is incomplete.</b>
+		 *
+		 * @param partialBody Partial content of response body
+		 * @param lengthRead  The length of 'partialBody'
+		 *
+		 * @param progress    The progress of request task in range from 0 to 100. <b>It would be
+		 *                    ignored if it can't be figured out.</b>
 		 */
-		void onHttpProgress(@NonNull HttpResponse response, @NonNull String chunk, @IntRange(from = 0, to = 100) int progress);
+		@UiThread
+		void onHttpProgress(@NonNull HttpResponse response, @NonNull byte[] partialBody,
+		                    int lengthRead, @IntRange(from = 0, to = 100) int progress);
 
 		/**
 		 * A callback method to be invoked when an HTTP request is finished <br><br>
@@ -88,7 +98,7 @@ public class HttpLauncher
 		if (request.canBeLaunched())
 		{
 			requests.add(request);
-			HttpResponse response = request.request();
+			HttpResponse response = request.request(null);
 			requests.remove(request);
 			return response;
 		}

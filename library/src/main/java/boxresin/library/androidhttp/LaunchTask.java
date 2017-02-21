@@ -27,7 +27,9 @@ final class LaunchTask extends AsyncTask<Object, Object, HttpResponse>
 		HttpResponse response = null;
 		try
 		{
-			response = HttpLauncher.launch(request);
+			HttpLauncher.requests.add(request);
+			response = request.request(listener);
+			HttpLauncher.requests.remove(request);
 		}
 		catch (IOException e)
 		{

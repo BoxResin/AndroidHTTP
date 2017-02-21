@@ -6,10 +6,10 @@ import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
@@ -22,14 +22,13 @@ import java.util.TreeMap;
 public class HttpRequest
 {
 	// @formatter:off
-	private String  url    = "";     // URL to requst
-	private String  method = "";     // HTTP method
-	private int     connectTimeout;  // Timeout when connecting to a web server, in milliseconds
-	private int     readTimeout;     // Timeout when reading an HTTP response from a web server, in milliseconds
-	private String  defaultEncoding; // Default encoding if response encoding isn't set
-	private boolean canceled;        // Whether request is canceled or not
-	private boolean launching;       // Whether request is in progress or not
-	private boolean waiting;         // Whether some thread is blocked by 'waitUntilLaunchable()' method
+	private String  url    = "";    // URL to requst
+	private String  method = "";    // HTTP method
+	private int     connectTimeout; // Timeout when connecting to a web server, in milliseconds
+	private int     readTimeout;    // Timeout when reading an HTTP response from a web server, in milliseconds
+	private boolean canceled;       // Whether request is canceled or not
+	private boolean launching;      // Whether request is in progress or not
+	private boolean waiting;        // Whether some thread is blocked by 'waitUntilLaunchable()' method
 
 	private Map<String, String> params  = new TreeMap<>(); // Map that contains POST parameters
 	private Map<String, String> headers = new TreeMap<>(); // Map that contains request headers
@@ -136,26 +135,6 @@ public class HttpRequest
 	}
 
 	/**
-	 * Returns default encoding to use if an HTTP response encoding isn't set.
-	 * @return Default encoding (ex. "UTF-8" or "EUC-KR")
-	 */
-	public String getDefaultEncoding()
-	{
-		return defaultEncoding;
-	}
-
-	/**
-	 * Sets default encoding.
-	 * This encoding is used to read an HTTP response when its encoding isn't set.
-	 * @param defaultEncoding Default encoding as String type (ex. "UTF-8" or "EUC-KR"). If null
-	 *                        specified, it would be set to "UTF-8".
-	 */
-	public void setDefaultEncoding(@Nullable String defaultEncoding)
-	{
-		this.defaultEncoding = (defaultEncoding != null) ? defaultEncoding : "UTF-8";
-	}
-
-	/**
 	 * Adds a parameter for POST method.
 	 * If specified HTTP method is not "POST", this parameter would be ignored.
 	 * @since v1.0.0
@@ -187,6 +166,7 @@ public class HttpRequest
 
 	/**
 	 * Clears all of headers for request.
+	 * @since v1.0.0
 	 */
 	public void clearHeaders()
 	{
@@ -226,7 +206,7 @@ public class HttpRequest
 	}
 
 	@Nullable
-	HttpResponse request() throws UnsupportedEncodingException, IOException
+	HttpResponse request(@Nullable final HttpLauncher.HttpTaskListener taskListener) throws IOException
 	{
 		launching = true;
 
@@ -250,11 +230,14 @@ public class HttpRequest
 			OutputStream out = connection.getOutputStream();
 			for (Map.Entry<String, String> entry : params.entrySet())
 			{
+				String key = entry.getKey();
+				String value = entry.getValue();
+
 				if (isNotFirst)
 					out.write("&".getBytes());
 				else isNotFirst = true;
 
-				out.write((entry.getKey() + "=" + entry.getValue()).getBytes());
+				out.write(String.format("%s=%s", key, value).getBytes());
 			}
 		}
 
@@ -264,32 +247,26 @@ public class HttpRequest
 		int statusCode = connection.getResponseCode();
 		String statusMessage = connection.getResponseMessage();
 
-		// Retrieve response encoding.
-		String encoding = defaultEncoding;
-		String contentType = connection.getHeaderField("Content-Type");
-		if (contentType != null)
-		{
-			String[] params = contentType.split(";");
-			for (String param : params)
-			{
-				param = param.trim();
-				if (param.startsWith("charset="))
-					encoding = param.replace("charset=", "");
-			}
-		}
-
 		// Prepare buffer.
-		StringBuilder stringBuilder = new StringBuilder(10 * 1024);
-		char[] buffer = new char[1024];
+		ByteArrayOutputStream bufferStream = new ByteArrayOutputStream(10 * 1024);
+		final byte[] buffer = new byte[1024];
 
-		// Read response body little by little in order to be ready for cancelation.
-		InputStreamReader reader = new InputStreamReader(connection.getInputStream(), encoding);
+		// Make result.
+		final HttpResponse response = new HttpResponse(statusCode, statusMessage, bufferStream, connection);
+		final int contentLength = connection.getContentLength();
+		int lengthTotal = 0;
+
+		// Read response's body little by little in order to be ready for cancelation.
+		InputStream in = connection.getInputStream();
 		while (true)
 		{
-			int length = reader.read(buffer);
+			final int length = in.read(buffer);
 			if (length == -1)
 				break;
-			stringBuilder.append(buffer);
+			if (length == 0)
+				continue;
+			bufferStream.write(buffer, 0, length);
+			lengthTotal += length;
 
 			// Check if canceled.
 			if (canceled)
@@ -315,6 +292,18 @@ public class HttpRequest
 				});
 				return null;
 			}
+
+			// Notify intermediate result.
+			final int progress = (contentLength != -1) ? lengthTotal * 100 / contentLength : 0;
+			handler.postDelayed(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					if (taskListener != null)
+						taskListener.onHttpProgress(response, buffer, length, progress);
+				}
+			}, 10);
 		}
 
 		connection.disconnect();
@@ -324,7 +313,7 @@ public class HttpRequest
 			waiting = false;
 			notifyAll();
 		}
-		return new HttpResponse(statusCode, statusMessage, stringBuilder.toString(), connection);
+		return response;
 	}
 
 	boolean cancel(@Nullable HttpLauncher.HttpCancelListener cancelListener)

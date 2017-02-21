@@ -28,8 +28,8 @@ public class HttpRequest
 	private int     connectTimeout; // Timeout when connecting to a web server, in milliseconds
 	private int     readTimeout;    // Timeout when reading an HTTP response from a web server, in milliseconds
 	private boolean canceled;       // Whether request is canceled or not
-	private boolean launching;      // Whether request is in progress or not.
-	private boolean waiting;        // Whether some thread is blocked by 'waitUntilLaunchable()' method.
+	private boolean launching;      // Whether request is in progress or not
+	private boolean waiting;        // Whether some thread is blocked by 'waitUntilLaunchable()' method
 
 	private Map<String, String> params  = new TreeMap<>(); // Map that contains POST parameters
 	private Map<String, String> headers = new TreeMap<>(); // Map that contains request headers
@@ -176,6 +176,7 @@ public class HttpRequest
 	/**
 	 * Returns whether HttpRequest is ready to be launched. If it returns false, you should not
 	 * launch that HttpRequest object.
+	 *
 	 * @return Whether HttpRequest is ready to be launched
 	 * @see #waitUntilLaunchable()
 	 * @since v1.0.0

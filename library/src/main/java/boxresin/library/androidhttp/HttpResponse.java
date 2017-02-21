@@ -51,6 +51,17 @@ public class HttpResponse
 	}
 
 	/**
+	 * Returns a header of a response message by specified key. <b>The key is case-sensitive.</b>
+	 * @return A header of a response message. It will be null if there's no such header.
+	 * @since v1.0.0
+	 */
+	@Nullable
+	public String getHeader(String key)
+	{
+		return connection.getHeaderField(key);
+	}
+
+	/**
 	 * Returns content of a response message. It can be an HTML document or JSON-formatted data. <br>
 	 * <b>NOTE: It detects content encoding automatically.</b>
 	 * @return Body of a response message as String type
@@ -83,6 +94,16 @@ public class HttpResponse
 	}
 
 	/**
+	 * Returns content of a response message. It can be an HTML document or JSON-formatted data.
+	 * @return Body of a response message as byte array.
+	 * @since v1.0.0
+	 */
+	public byte[] getBodyAsByteArray()
+	{
+		return bodyStream.toByteArray();
+	}
+
+	/**
 	 * Returns encoding of content in a response message. It will be null if there's no encoding
 	 *         information in the response header.
 	 * @return content's encoding
@@ -105,26 +126,5 @@ public class HttpResponse
 		{
 		}
 		return null;
-	}
-
-	/**
-	 * Returns a header of a response message by specified key. <b>The key is case-sensitive.</b>
-	 * @return A header of a response message. It will be null if there's no such header.
-	 * @since v1.0.0
-	 */
-	@Nullable
-	public String getHeader(String key)
-	{
-		return connection.getHeaderField(key);
-	}
-
-	/**
-	 * Returns content of a response message. It can be an HTML document or JSON-formatted data.
-	 * @return Body of a response message as byte array.
-	 * @since v1.0.0
-	 */
-	public byte[] getBodyAsByteArray()
-	{
-		return bodyStream.toByteArray();
 	}
 }

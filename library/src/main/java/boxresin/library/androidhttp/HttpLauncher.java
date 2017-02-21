@@ -1,5 +1,7 @@
 package boxresin.library.androidhttp;
 
+import android.support.annotation.IntRange;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 
@@ -40,6 +42,14 @@ public class HttpLauncher
 	 */
 	public interface HttpTaskListener
 	{
+		/**
+		 * A callback method to be invoked periodically when an HTTP request is in progress
+		 * @param response Intermediate response
+		 * @param chunk    Partial of response message body newly read
+		 * @param progress
+		 */
+		void onHttpProgress(@NonNull HttpResponse response, @NonNull String chunk, @IntRange(from = 0, to = 100) int progress);
+
 		/**
 		 * A callback method to be invoked when an HTTP request is finished <br><br>
 		 * <b>NOTE: This method will be invoked on the UI thread.</b>

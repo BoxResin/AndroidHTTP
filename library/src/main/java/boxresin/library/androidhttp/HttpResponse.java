@@ -66,6 +66,7 @@ public class HttpResponse
 	/**
 	 * Returns all of headers of a response message.
 	 * @return An unmodifiable map of response-header fields and values.
+	 * @since v1.0.0
 	 */
 	public Map<String, List<String>> getAllHeaders()
 	{
@@ -118,6 +119,7 @@ public class HttpResponse
 	 * Returns encoding of content in a response message. It will be null if there's no encoding
 	 *         information in the response header.
 	 * @return content's encoding
+	 * @since v1.0.0
 	 */
 	@Nullable
 	public String getBodyEncoding()

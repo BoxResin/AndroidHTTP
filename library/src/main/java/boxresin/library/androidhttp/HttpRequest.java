@@ -15,6 +15,7 @@ import java.util.TreeMap;
 
 /**
  * A class representing HTTP request.
+ * You can't call 'request()' twice for same HttpRequest instance. (The instance is not reusable.)
  * @since v1.0.0
  */
 public class HttpRequest
@@ -148,6 +149,7 @@ public class HttpRequest
 
 	/**
 	 * Clears all of headers for request.
+	 * @since v1.0.0
 	 */
 	public void clearHeaders()
 	{
@@ -158,6 +160,7 @@ public class HttpRequest
 	 * Sends the request to a web server.
 	 * @return An HTTP response from the web server.
 	 * @throws IOException
+	 * @since v1.0.0
 	 */
 	@Nullable
 	public HttpResponse request() throws IOException

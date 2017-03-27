@@ -1,10 +1,7 @@
 package boxresin.library.androidhttp;
 
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.annotation.UiThread;
-import android.support.annotation.WorkerThread;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,26 +24,10 @@ public class HttpRequest
 	private String  method = "";    // HTTP method
 	private int     connectTimeout; // Timeout when connecting to a web server, in milliseconds
 	private int     readTimeout;    // Timeout when reading an HTTP response from a web server, in milliseconds
-	private boolean canceled;       // Whether request is canceled or not
-	private boolean launching;      // Whether request is in progress or not
-	private boolean waiting;        // Whether some thread is blocked by 'waitUntilLaunchable()' method
 
 	private Map<String, String> params  = new TreeMap<>(); // Map that contains POST parameters
 	private Map<String, String> headers = new TreeMap<>(); // Map that contains request headers
 	// @formatter:on
-
-	private HttpLauncher.HttpCancelListener cancelListener;
-	private Handler handler;
-
-	/**
-	 * <b>NOTE: This constructor must only be called on the UI thread.</b>
-	 * @since v1.0.0
-	 */
-	@UiThread
-	public HttpRequest()
-	{
-		handler = new Handler();
-	}
 
 	/**
 	 * Returns the URL to request.
@@ -174,42 +155,13 @@ public class HttpRequest
 	}
 
 	/**
-	 * Returns whether HttpRequest is ready to be launched. If it returns false, you should not
-	 * launch that HttpRequest object.
-	 *
-	 * @return Whether HttpRequest is ready to be launched
-	 * @see #waitUntilLaunchable()
-	 * @since v1.0.0
+	 * Sends the request to a web server.
+	 * @return An HTTP response from the web server.
+	 * @throws IOException
 	 */
-	public boolean canBeLaunched()
-	{
-		return !launching;
-	}
-
-	/**
-	 * Blocks current thread until this HttpRequest object can be launched. <br>
-	 *
-	 * <b>NOTE: Do not use this method on a thread where {@link HttpLauncher#launch(HttpRequest)}
-	 * called. <br>Do not invoke it on the UI thread.</b>
-	 *
-	 * @see #canBeLaunched()
-	 * @since v1.0.0
-	 */
-	@WorkerThread
-	public void waitUntilLaunchable() throws InterruptedException
-	{
-		if (launching)
-		{
-			waiting = true;
-			wait();
-		}
-	}
-
 	@Nullable
-	HttpResponse request() throws IOException
+	public HttpResponse request() throws IOException
 	{
-		launching = true;
-
 		// Set options.
 		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
 		connection.setRequestMethod(method);
@@ -262,52 +214,9 @@ public class HttpRequest
 			if (length == -1)
 				break;
 			bufferStream.write(buffer, 0, length);
-
-			// Check if canceled.
-			if (canceled)
-			{
-				connection.disconnect();
-				canceled = false;
-				launching = false;
-				if (waiting)
-				{
-					waiting = false;
-					notifyAll();
-				}
-
-				handler.post(new Runnable()
-				{
-					@Override
-					public void run()
-					{
-						if (cancelListener != null)
-							cancelListener.onHttpCancel();
-						cancelListener = null;
-					}
-				});
-				return null;
-			}
 		}
 
 		connection.disconnect();
-		launching = false;
-		if (waiting)
-		{
-			waiting = false;
-			notifyAll();
-		}
 		return new HttpResponse(statusCode, statusMessage, bufferStream, connection);
-	}
-
-	boolean cancel(@Nullable HttpLauncher.HttpCancelListener cancelListener)
-	{
-		// If it hasn't been launched, 'cancel()' method will be failed always.
-		if (!launching)
-			return false;
-
-		// Otherwise, 'cancel()' succeeds.
-		this.cancelListener = cancelListener;
-		canceled = true;
-		return true;
 	}
 }

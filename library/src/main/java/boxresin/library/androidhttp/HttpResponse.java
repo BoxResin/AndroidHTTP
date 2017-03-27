@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * A class representing HTTP response.
@@ -62,8 +64,17 @@ public class HttpResponse
 	}
 
 	/**
+	 * Returns all of headers of a response message.
+	 * @return An unmodifiable map of response-header fields and values.
+	 */
+	public Map<String, List<String>> getAllHeaders()
+	{
+		return connection.getHeaderFields();
+	}
+
+	/**
 	 * Returns content of a response message. It can be an HTML document or JSON-formatted data. <br>
-	 * <b>NOTE: It detects content encoding automatically.</b>
+	 * <b>NOTE: It detects the content encoding automatically.</b>
 	 * @return Body of a response message as String type
 	 * @since v1.0.0
 	 */
